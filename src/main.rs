@@ -1,8 +1,14 @@
+mod board;
+
+use crate::board::Board;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use sdl2::rect::Point;
+use sdl2::rect::Rect;
 use std::time::Duration;
+
+const SCREEN_WIDTH: u32 = 800;
+const SCREEN_HEIGHT: u32 = 600;
 
 fn main() {
     let sdl_context = sdl2::init().expect("Could not init SDL");
@@ -11,7 +17,7 @@ fn main() {
         .expect("Couldn't get SDL video subsystem");
 
     let window = video_subsystem
-        .window("A Rust Game", 800, 600)
+        .window("A Rust Game", SCREEN_WIDTH, SCREEN_HEIGHT)
         .position_centered()
         .build()
         .expect("Failed to build main window");
@@ -47,28 +53,9 @@ fn main() {
             }
         }
 
-        let (w, h) = {
-            let (w, h) = canvas.window().size();
-            (w as i32, h as i32)
-        };
-        let cell_width = w / 5;
-        let cell_height = h / 5;
-        canvas.set_draw_color(Color::RGB(0, 0, 0));
-        for i in 0..5 {
-            canvas
-                .draw_line(
-                    Point::new(cell_width / 2, cell_height / 2 + i * cell_height),
-                    Point::new(w - cell_width / 2, cell_height / 2 + i * cell_height),
-                )
-                .expect("Fail do draw lines");
-
-            canvas
-                .draw_line(
-                    Point::new(cell_width / 2 + i * cell_width, cell_height / 2),
-                    Point::new(cell_width / 2 + i * cell_width, h - cell_height / 2),
-                )
-                .expect("Fail do draw columns");
-        }
+        Board::new(Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
+            .draw(&mut canvas)
+            .expect("Failed to draw board");
 
         canvas.present();
         std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
