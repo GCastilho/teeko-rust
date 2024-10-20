@@ -10,7 +10,7 @@ use std::time::Duration;
 const SCREEN_WIDTH: u32 = 800;
 const SCREEN_HEIGHT: u32 = 600;
 
-fn main() {
+fn main() -> Result<(), String> {
     let sdl_context = sdl2::init().expect("Could not init SDL");
     let video_subsystem = sdl_context
         .video()
@@ -59,9 +59,11 @@ fn main() {
             }
         }
 
-        board.draw(&mut canvas).expect("Failed to draw board");
+        board.draw(&mut canvas)?;
 
         canvas.present();
         std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
+
+    Ok(())
 }
