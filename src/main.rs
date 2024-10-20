@@ -29,6 +29,12 @@ fn main() {
     canvas.set_draw_color(Color::RGB(0, 255, 255));
     canvas.clear();
     canvas.present();
+
+    let mut board = Board::new(Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
+    println!("{board}");
+    board.jumble();
+    println!("{board}");
+
     let mut event_pump = sdl_context
         .event_pump()
         .expect("Failed to get SDL event pump");
@@ -53,9 +59,7 @@ fn main() {
             }
         }
 
-        Board::new(Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT))
-            .draw(&mut canvas)
-            .expect("Failed to draw board");
+        board.draw(&mut canvas).expect("Failed to draw board");
 
         canvas.present();
         std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
