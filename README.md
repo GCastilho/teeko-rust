@@ -1,4 +1,4 @@
-# a-rust-game
+# teeko-rust
 
 ## Development
 

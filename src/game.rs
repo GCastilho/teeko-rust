@@ -6,9 +6,10 @@ use sdl2::pixels::Color;
 use sdl2::rect::{Point, Rect};
 use sdl2::render::Canvas;
 use sdl2::video::Window;
+use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, strum::Display, Clone, Copy)]
+#[derive(Debug, strum::Display, Clone, Copy, Hash, PartialEq, Eq)]
 enum Piece {
     #[strum(to_string = "-")]
     None,
@@ -38,15 +39,27 @@ impl Distribution<Piece> for Standard {
     }
 }
 
-pub struct Board {
+const ROWS: usize = 5;
+const COLS: usize = 5;
+
+pub struct Game {
     area: Rect,
-    pieces: [[Piece; 5]; 5],
+    pieces: [[Piece; COLS]; ROWS],
+    current_player: Piece,
+    pieces_dropped: HashMap<Piece, usize>,
 }
 
-impl Board {
+impl Game {
     pub fn new(area: Rect) -> Self {
-        let pieces = [[Piece::None; 5]; 5];
-        Board { area, pieces }
+        let pieces = [[Piece::None; COLS]; ROWS];
+        let current_player = Piece::Red;
+        let pieces_dropped = HashMap::new();
+        Game {
+            area,
+            pieces,
+            current_player,
+            pieces_dropped,
+        }
     }
 
     pub fn jumble(&mut self) {
@@ -57,28 +70,39 @@ impl Board {
         }
     }
 
-    fn dimensions(&self) -> (usize, usize) {
-        let rows = self.pieces.len();
-        let cols = self.pieces[0].len();
-        (rows, cols)
-    }
-
     fn cell_sides(&self) -> (i32, i32) {
-        let (rows, cols) = self.dimensions();
-        let height = self.area.h / rows as i32;
-        let width = self.area.w / cols as i32;
+        let height = self.area.h / ROWS as i32;
+        let width = self.area.w / COLS as i32;
         (width, height)
     }
 
     pub fn handle_click(&mut self, x: usize, y: usize) {
-        let (rows, cols) = self.dimensions();
-        let row = rows * y / self.area.h as usize;
-        let col = cols * x / self.area.w as usize;
-        if row > rows || col > cols {
+        let row = ROWS * y / self.area.h as usize;
+        let col = COLS * x / self.area.w as usize;
+        if row > ROWS || col > COLS {
+            return; // Sanity check
+        }
+        if *self.pieces_dropped.get(&self.current_player).unwrap_or(&0) >= 4 {
+            return;
+        };
+        if self.pieces[row][col] != Piece::None {
             return;
         }
         println!("row: {}, col: {}", row, col);
-        self.pieces[row][col] = Piece::Red;
+        self.pieces[row][col] = self.current_player;
+        self.next_turn();
+    }
+
+    fn next_turn(&mut self) {
+        self.pieces_dropped
+            .entry(self.current_player)
+            .and_modify(|v| *v += 1)
+            .or_insert(1);
+        match self.current_player {
+            Piece::None => (),
+            Piece::Red => self.current_player = Piece::Black,
+            Piece::Black => self.current_player = Piece::Red,
+        }
     }
 
     pub fn draw(&self, canvas: &mut Canvas<Window>) -> Result<(), String> {
@@ -163,7 +187,7 @@ impl Board {
     }
 }
 
-impl Display for Board {
+impl Display for Game {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         for row in self.pieces {
             for piece in row {

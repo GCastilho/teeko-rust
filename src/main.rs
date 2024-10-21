@@ -1,6 +1,6 @@
-mod board;
+mod game;
 
-use crate::board::Board;
+use crate::game::Game;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
@@ -30,7 +30,7 @@ fn main() -> Result<(), String> {
     canvas.clear();
     canvas.present();
 
-    let mut board = Board::new(Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
+    let mut game = Game::new(Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
 
     let mut event_pump = sdl_context
         .event_pump()
@@ -48,13 +48,13 @@ fn main() -> Result<(), String> {
                     ..
                 } => break 'running,
                 Event::MouseButtonDown { x, y, .. } => {
-                    board.handle_click(x as usize, y as usize);
+                    game.handle_click(x as usize, y as usize);
                 }
                 _ => {}
             }
         }
 
-        board.draw(&mut canvas)?;
+        game.draw(&mut canvas)?;
 
         canvas.present();
         std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
