@@ -31,9 +31,6 @@ fn main() -> Result<(), String> {
     canvas.present();
 
     let mut board = Board::new(Rect::new(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
-    println!("{board}");
-    board.jumble();
-    println!("{board}");
 
     let mut event_pump = sdl_context
         .event_pump()
@@ -50,10 +47,8 @@ fn main() -> Result<(), String> {
                     keycode: Some(Keycode::Escape),
                     ..
                 } => break 'running,
-                Event::MouseMotion {
-                    x, y, xrel, yrel, ..
-                } => {
-                    println!("x: {}, y: {}; xrel: {}, yrel: {}", x, y, xrel, yrel);
+                Event::MouseButtonDown { x, y, .. } => {
+                    board.handle_click(x as usize, y as usize);
                 }
                 _ => {}
             }

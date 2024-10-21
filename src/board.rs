@@ -57,10 +57,28 @@ impl Board {
         }
     }
 
-    pub fn cell_sides(&self) -> (i32, i32) {
-        let width = self.area.w / 5;
-        let height = self.area.h / 5;
+    fn dimensions(&self) -> (usize, usize) {
+        let rows = self.pieces.len();
+        let cols = self.pieces[0].len();
+        (rows, cols)
+    }
+
+    fn cell_sides(&self) -> (i32, i32) {
+        let (rows, cols) = self.dimensions();
+        let height = self.area.h / rows as i32;
+        let width = self.area.w / cols as i32;
         (width, height)
+    }
+
+    pub fn handle_click(&mut self, x: usize, y: usize) {
+        let (rows, cols) = self.dimensions();
+        let row = rows * y / self.area.h as usize;
+        let col = cols * x / self.area.w as usize;
+        if row > rows || col > cols {
+            return;
+        }
+        println!("row: {}, col: {}", row, col);
+        self.pieces[row][col] = Piece::Red;
     }
 
     pub fn draw(&self, canvas: &mut Canvas<Window>) -> Result<(), String> {
